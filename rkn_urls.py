@@ -1,12 +1,16 @@
+import sys
 import requests
 import threading
+import argparse
 from datetime import datetime, timedelta
+from lxml.html import fromstring
 
-filename = 'contrib/urls'
-count = len(open(filename).readlines())
-drop = 30
-print('Записей найдено : ',count)
-print(datetime.now())
+def createParser ():
+    parser = argparse.ArgumentParser()
+    parser.add_argument ('-t', '--thread')
+    parser.add_argument ('-f', '--file', default='contrib/urls')
+    return parser
+
 def funcname(s,n):
     not_blockd = []
     error_404_list = 0
@@ -14,7 +18,7 @@ def funcname(s,n):
     count_blocked = 0
     count_all = 0
     conn_error = 0
-    for i, x in enumerate(open(filename)):
+    for i, x in enumerate(open(items.file)):
         if i >= int(s) and i <= int(n):
             try:
                 url = str(x)[:-1]
@@ -27,8 +31,21 @@ def funcname(s,n):
                     error_404_list = int(error_404_list) + 1
                 elif response.status_code == 403:
                     error_403_list = int(error_403_list) + 1
+                elif response.status_code == 200:
+                    error_403_list = int(error_403_list) + 1
                 else:
-                    not_blockd.append(x)
+                    try:
+                        r = requests.get('http://'+url, timeout=2.5)
+                        tree = fromstring(r.content)
+                        text = tree.findtext('.//title')
+                        tag = 'TTK :: Доступ к ресурсу ограничен'
+                        if text == tag:
+                            print(i,'Сайт заблокирован!')
+                        else:
+                            not_blockd.append(x)
+                    except:
+                        not_blockd.append(x)
+                    
             except requests.exceptions.ConnectionError:
                 count_all = int(count_all) + 1
                 conn_error = int(conn_error) + 1
@@ -48,6 +65,14 @@ def funcname(s,n):
 
 
 if __name__ == '__main__':
+    #Аргумент '-t', '--thread'
+    parser = createParser()
+    items = parser.parse_args(sys.argv[1:])
+
+    count = len(open(items.file).readlines())
+    print('Процесс запусщен : ',datetime.strptime(str(datetime.now())[:-7], "%Y-%m-%d %H:%M:%S"))
+    print('Записей найдено : ',count)
+    drop = int(items.thread)
     ln = 0
     x = int(count/int(drop))+1
     out_f = open('nb_test','w+')
@@ -57,4 +82,4 @@ if __name__ == '__main__':
         print('Thread '+str(i+1) + ' : thread start...')
         ln = int(ln+x+1)
     my_thread.join()
-    print(datetime.now())
+    print(datetime.strptime(str(datetime.now())[:-7], "%Y-%m-%d %H:%M:%S"))

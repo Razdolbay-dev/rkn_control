@@ -4,19 +4,14 @@ import threading
 import argparse
 from datetime import datetime, timedelta
 from lxml.html import fromstring
-from lxml.etree import ParseError
-from lxml.etree import ParserError
-
 
 def createParser ():
     parser = argparse.ArgumentParser()
-    parser.add_argument ('-t', '--thread', help="Количество потоков")
-    parser.add_argument ('-f', '--file', default='contrib/urls', help="файл с которого будем забирать строки")
-    parser.add_argument ('-m', '--marker', help="По какому маркеру проверять")
-    parser.add_argument ('-o', '--output', help="Путь выходного файла с результатом")
+    parser.add_argument ('-t', '--thread')
+    parser.add_argument ('-f', '--file', default='contrib/urls')
     return parser
 
-def rkn_control_dom(s,n):
+def funcname(s,n):
     not_blockd = []
     error_404_list = 0
     error_403_list = 0
@@ -34,25 +29,16 @@ def rkn_control_dom(s,n):
                 r = requests.get('http://'+url, timeout=2.5)
                 tree = fromstring(r.content)
                 text = tree.findtext('.//title')
-                marker = items.marker
-                if text != marker:
+                tag = 'TTK :: Доступ к ресурсу ограничен'
+                if text != tag:
                     not_blockd.append(x)
+                
             except requests.exceptions.ConnectionError:
                 count_all = int(count_all) + 1
                 conn_error = int(conn_error) + 1
-            except requests.exceptions.Timeout:
-                count_all = int(count_all) + 1
-                conn_error = int(conn_error) + 1
-            except requests.exceptions.RequestException:
-                count_all = int(count_all) + 1
-                conn_error = int(conn_error) + 1
-            except (ParserError, ParseError):
-                    not_blockd.append(x)
-            except UnicodeDecodeError:
-                    not_blockd.append(x)
 
     print('********************************************************************')
-    print(threading.currentThread().getName() + ': thread end... | ' + str(items.output))
+    print(threading.currentThread().getName() + ': thread end...')
     print('Проверено записей: '+str(count_all))
     #print('C ошибкой 404 : '+str(error_404_list)+' | с ошибкой подключения : '+str(conn_error)+' | с ошибкой 403 : '+str(error_403_list))
     print('Не прошли проверку : ',len(not_blockd))
@@ -66,16 +52,15 @@ if __name__ == '__main__':
     items = parser.parse_args(sys.argv[1:])
 
     count = len(open(items.file).readlines())
-    print('Процесс запущен : ',datetime.strptime(str(datetime.now())[:-7], "%Y-%m-%d %H:%M:%S"))
+    print('Процесс запусщен : ',datetime.strptime(str(datetime.now())[:-7], "%Y-%m-%d %H:%M:%S"))
     print('Записей найдено : ',count)
     drop = int(items.thread)
     ln = 0
     x = int(count/int(drop))+1
-    out_f = open(items.output,'w+')
+    out_f = open('nb_domain','w+')
     for i in range(int(drop)):
-        my_thread = threading.Thread(target=rkn_control_dom, name='Thread_'+str(i+1), args=(int(ln),int(ln+x+1)))
+        my_thread = threading.Thread(target=funcname, name='Thread_'+str(i+1), args=(int(ln),int(ln+x+1)))
         my_thread.start()
         print('Thread '+str(i+1) + ' : thread start...')
         ln = int(ln+x+1)
     my_thread.join()
-    count = len(open(items.output).readlines())

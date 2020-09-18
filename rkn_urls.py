@@ -1,9 +1,12 @@
+# -*- coding: UTF-8 -*-
 import sys
 import requests
 import threading
 import argparse
 from datetime import datetime, timedelta
 from lxml.html import fromstring
+from lxml.etree import ParseError
+from lxml.etree import ParserError
 
 def createParser ():
     parser = argparse.ArgumentParser()
@@ -31,21 +34,16 @@ def funcname(s,n):
                     error_404_list = int(error_404_list) + 1
                 elif response.status_code == 403:
                     error_403_list = int(error_403_list) + 1
-                elif response.status_code == 200:
-                    error_403_list = int(error_403_list) + 1
                 else:
                     try:
                         r = requests.get('http://'+url, timeout=2.5)
                         tree = fromstring(r.content)
                         text = tree.findtext('.//title')
                         tag = 'TTK :: Доступ к ресурсу ограничен'
-                        if text == tag:
-                            print(i,'Сайт заблокирован!')
-                        else:
+                        if text != tag:
                             not_blockd.append(x)
-                    except:
+                    except (ParserError, ParseError):
                         not_blockd.append(x)
-                    
             except requests.exceptions.ConnectionError:
                 count_all = int(count_all) + 1
                 conn_error = int(conn_error) + 1
@@ -77,9 +75,9 @@ if __name__ == '__main__':
     x = int(count/int(drop))+1
     out_f = open('nb_test','w+')
     for i in range(int(drop)):
-        my_thread = threading.Thread(target=funcname, name='Thread_'+str(i), args=(int(ln),int(ln+x+1)))
+        my_thread = threading.Thread(target=funcname, name='Thread_'+str(i+1), args=(int(ln),int(ln+x+1)))
         my_thread.start()
         print('Thread '+str(i+1) + ' : thread start...')
         ln = int(ln+x+1)
     my_thread.join()
-    print(datetime.strptime(str(datetime.now())[:-7], "%Y-%m-%d %H:%M:%S"))
+

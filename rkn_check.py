@@ -31,12 +31,28 @@ def rkn_control_dom(s,n):
                     url = x.strip()[2:]
                 else:
                     url = x.strip()
-                r = requests.get('http://'+url, timeout=2.5)
-                tree = fromstring(r.content)
-                text = tree.findtext('.//title')
-                marker = items.marker
-                if text != marker:
-                    not_blockd.append(x)
+
+                response_head = requests.head('http://'+url, timeout=3)
+
+                if response_head.status_code == 301:
+                    count_all = int(count_all) + 1
+                    count_blocked = int(count_blocked) + 1
+                elif response_head.status_code == 404:
+                    count_all = int(count_all) + 1
+                    error_404_list = int(error_404_list) + 1
+                elif response_head.status_code == 403:
+                    count_all = int(count_all) + 1
+                    error_403_list = int(error_403_list) + 1
+                elif response_head.status_code == 200:
+                    count_all = int(count_all) + 1
+                    response_get = requests.get('http://'+url, timeout=2.5)
+                    tree = fromstring(response_get.content)
+                    text = tree.findtext('.//title')
+                    #marker = items.marker
+                    if str(items.marker) != text:
+                        count_all = int(count_all) + 1
+                        not_blockd.append(x)
+                
             except requests.exceptions.ConnectionError:
                 count_all = int(count_all) + 1
                 conn_error = int(conn_error) + 1
@@ -47,9 +63,11 @@ def rkn_control_dom(s,n):
                 count_all = int(count_all) + 1
                 conn_error = int(conn_error) + 1
             except (ParserError, ParseError):
-                    not_blockd.append(x)
+                count_all = int(count_all) + 1
+                not_blockd.append(x)
             except UnicodeDecodeError:
-                    not_blockd.append(x)
+                count_all = int(count_all) + 1
+                not_blockd.append(x)
 
     print('********************************************************************')
     print(threading.currentThread().getName() + ': thread end... | ' + str(items.output))

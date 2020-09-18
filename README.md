@@ -12,7 +12,7 @@ password = '123321'
 ### имя БД
 name = 'rkn'
 ```
-# Эксплуотация
+# Эксплуатация 
 ```sh
 pip install -r req.txt
 ```

@@ -16,4 +16,9 @@ name = 'rkn'
 ```sh
 pip install -r req.txt
 ```
-Запускается так : ``` python3 rkn_urls.py```
+#
+Запускается так : ``` python3 rkn_urls.py -t 20 -f contrib/urls```
+#
+```-f``` - путь к файлу
+#
+```-t``` - количество потоков

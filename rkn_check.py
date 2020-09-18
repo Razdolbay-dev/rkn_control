@@ -47,7 +47,7 @@ def rkn_control_dom(s,n):
                     response_get = requests.get('http://'+url, timeout=2.5)
                     tree = fromstring(response_get.content)
                     text = tree.findtext('.//title')
-                    #marker = items.marker
+
                     if str(items.marker) not in str(text):
                         count_all = int(count_all) + 1
                         not_blockd.append(x)
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     for i in range(int(drop)):
         my_thread = threading.Thread(target=rkn_control_dom, name='Thread_'+str(i+1), args=(int(ln),int(ln+x+1)))
         my_thread.start()
-        print('Thread '+str(i+1) + ' : thread start...')
+        #print('Thread '+str(i+1) + ' : thread start...')
         ln = int(ln+x+1)
     my_thread.join()
     count = len(open(items.output).readlines())

@@ -34,8 +34,7 @@ def rkn_control_dom(s,n):
                 r = requests.get('http://'+url, timeout=2.5)
                 tree = fromstring(r.content)
                 text = tree.findtext('.//title')
-                marker = items.marker
-                if text != marker:
+                if str(items.marker) not in str(text):
                     not_blockd.append(x)
             except requests.exceptions.ConnectionError:
                 count_all = int(count_all) + 1

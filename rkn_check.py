@@ -7,7 +7,6 @@ from lxml.html import fromstring
 from lxml.etree import ParseError
 from lxml.etree import ParserError
 
-
 def createParser ():
     parser = argparse.ArgumentParser()
     parser.add_argument ('-t', '--thread', help="Количество потоков")
@@ -49,7 +48,7 @@ def rkn_control_dom(s,n):
                     tree = fromstring(response_get.content)
                     text = tree.findtext('.//title')
                     #marker = items.marker
-                    if str(items.marker) != text:
+                    if str(items.marker) not in str(text):
                         count_all = int(count_all) + 1
                         not_blockd.append(x)
                 
@@ -72,7 +71,7 @@ def rkn_control_dom(s,n):
     print('********************************************************************')
     print(threading.currentThread().getName() + ': thread end... | ' + str(items.output))
     print('Проверено записей: '+str(count_all))
-    #print('C ошибкой 404 : '+str(error_404_list)+' | с ошибкой подключения : '+str(conn_error)+' | с ошибкой 403 : '+str(error_403_list))
+    print('C ошибкой 404 : '+str(error_404_list)+' | с ошибкой подключения : '+str(conn_error)+' | с ошибкой 403 : '+str(error_403_list))
     print('Не прошли проверку : ',len(not_blockd))
     for item in not_blockd:
         out_f.write(item)

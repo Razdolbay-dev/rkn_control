@@ -95,4 +95,4 @@ if __name__ == '__main__':
         #print('Thread '+str(i+1) + ' : thread start...')
         ln = int(ln+x+1)
     my_thread.join()
-    count = len(open(items.output).readlines())
+    
